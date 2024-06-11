@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>ThreeJs Black Hole Sample</title>
+    <script type="importmap">
+      {
+        "imports": {
+          "three": "https://fastly.jsdelivr.net/npm/three@0.160.1/build/three.module.js",
+          "three/examples/jsm/": "https://fastly.jsdelivr.net/npm/three@0.160.1/examples/jsm/"
+        }
+      }
+    </script>
+    <style>
+      html,
+      body {
+        margin: 0;
+        padding: 0;
+        background-color: #000;
+      }
+    </style>
+  </head>
+  <body></body>
+  <script type="module">
+    import { WebGLRenderer, PerspectiveCamera, Scene, TextureLoader, BoxGeometry, Mesh, Color, MeshBasicMaterial, SRGBColorSpace } from 'three'
+    import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js'
+    import { SkyBox } from './skybox.js'
+
+    const renderer = new WebGLRenderer({
+      antialias: true,
+      alpha: true,
+      canvas: undefined
+    })
+    const getSize = () => ({
+      width: window.innerWidth,
+      height: window.innerHeight
+    })
+    const { width, height } = getSize()
+    renderer.setPixelRatio(window.devicePixelRatio)
+    renderer.setSize(width, height)
+    renderer.setClearColor('#000')
+    renderer.outputColorSpace = SRGBColorSpace
+    document.body.appendChild(renderer.domElement)
+
+    const camera = new PerspectiveCamera(45, width / height, 0.1, 1000)
+    camera.position.set(0, 0, 1)
+    camera.lookAt(0, 0, 0)
+    const scene = new Scene()
+    scene.background = new Color(0, 0, 0)
+    const skyBox = new SkyBox()
+    skyBox.position.set(0, 0, 1)
+    scene.add(skyBox)
+
+    const orbit = new OrbitControls(camera, renderer.domElement)
+
+    const update = () => {
+      renderer.clear()
+      renderer.render(scene, camera)
+      orbit.update()
+      requestAnimationFrame(update)
+    }
+
+    update()
+  </script>
+</html>
