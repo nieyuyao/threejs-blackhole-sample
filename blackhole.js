@@ -16,7 +16,7 @@ export class BlackHole extends Mesh {
         adiskDensityH: { value: 1 },
         adiskNoiseScale: { value: 0.8 },
         adiskNoiseLOD: { value: 5 },
-        adiskSpeed: { value: 0.5 },
+        adiskSpeed: { value: 0.8 },
         colorMap: { value: null },
         iTime: { value: 0 },
         resolution: { value: 1 }
@@ -185,7 +185,7 @@ export class BlackHole extends Mesh {
 
         void adiskColor(vec3 pos, inout vec3 color, inout float alpha) {
           float innerRadius = 2.6;
-          float outerRadius = 12.0;
+          float outerRadius = 10.0;
         
           // Density linearly decreases as the distance to the blackhole center
           // increases.
@@ -234,7 +234,7 @@ export class BlackHole extends Mesh {
           vec3 dustColor =
             texture2D(colorMap, vec2(sphericalCoord.x / outerRadius, 0.5)).rgb;
         
-          color += density * adiskLit * dustColor * alpha * abs(noise) * 0.01;
+          color += density * adiskLit * dustColor * alpha * abs(noise) * 0.004;
         }
 
         vec3 traceColor(vec3 pos, vec3 dir) {
@@ -289,7 +289,7 @@ export class BlackHole extends Mesh {
           vec2 uv = vec2(vUv);
           uv -= 0.5;
           uv /= 0.5;
-          vec3 fragPos = unProjectPoint(vec3(uv.xy, -1.0));
+          vec3 fragPos = unProjectPoint(vec3(uv, -1.0));
           rayDir = normalize(fragPos - cameraPosition);
           vec4 texBlackHoleColor = vec4(traceColor(cameraPosition, rayDir), 1.0);
 
@@ -302,7 +302,6 @@ export class BlackHole extends Mesh {
       `
     })
     super(geometry, material)
-    this.frustumCulled = false
     this.loadMaps()
 
     this.onBeforeRender = (_, __, camera) => {
