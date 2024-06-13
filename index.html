@@ -23,9 +23,22 @@
   </head>
   <body></body>
   <script type="module">
-    import { WebGLRenderer, PerspectiveCamera, Scene, TextureLoader, BoxGeometry, Mesh, Color, MeshBasicMaterial, SRGBColorSpace } from 'three'
+    import {
+      WebGLRenderer,
+      PerspectiveCamera,
+      Scene,
+      TextureLoader,
+      BoxGeometry,
+      Mesh,
+      Color,
+      MeshBasicMaterial,
+      SRGBColorSpace,
+      Clock,
+      WebGLRenderTarget,
+      Vector2
+    } from 'three'
     import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js'
-    import { SkyBox } from './skybox.js'
+    import { BlackHole } from './blackhole.js'
 
     const renderer = new WebGLRenderer({
       antialias: true,
@@ -43,19 +56,23 @@
     renderer.outputColorSpace = SRGBColorSpace
     document.body.appendChild(renderer.domElement)
 
-    const camera = new PerspectiveCamera(45, width / height, 0.1, 1000)
-    camera.position.set(0, 0, 1)
+    const camera = new PerspectiveCamera(70, width / height, 0.1, 1000)
+    camera.position.set(0, 1, 20)
     camera.lookAt(0, 0, 0)
+
     const scene = new Scene()
     scene.background = new Color(0, 0, 0)
-    const skyBox = new SkyBox()
-    skyBox.position.set(0, 0, 1)
-    scene.add(skyBox)
+    const blackHole = new BlackHole()
+    scene.add(blackHole)
+
+    const clock = new Clock()
 
     const orbit = new OrbitControls(camera, renderer.domElement)
 
     const update = () => {
+      const time = clock.getElapsedTime()
       renderer.clear()
+      blackHole.update(time)
       renderer.render(scene, camera)
       orbit.update()
       requestAnimationFrame(update)
