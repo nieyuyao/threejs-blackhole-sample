@@ -9,7 +9,6 @@ export class BlackHole extends Mesh {
       uniforms: {
         skyBoxCube: { value: null },
         cameraWorldMat: { value: new Matrix4() },
-        adiskParticle: { value: 1 },
         adiskHeight: { value: 0.2 },
         adiskLit: { value: 1 },
         adiskDensityV: { value: 1 },
@@ -19,7 +18,9 @@ export class BlackHole extends Mesh {
         adiskSpeed: { value: 0.8 },
         colorMap: { value: null },
         iTime: { value: 0 },
-        resolution: { value: 1 }
+        resolution: { value: 1 },
+        renderBlackHole: { value: 1 },
+        renderAccDisk: { value: 1 }
       },
       vertexShader: `
         varying vec2 vUv;
@@ -38,7 +39,6 @@ export class BlackHole extends Mesh {
         varying mat4 projectionMat;
         uniform mat4 cameraWorldMat;
 
-        uniform float adiskParticle;
         uniform float adiskHeight;
         uniform float adiskLit;
         uniform float adiskDensityV;
@@ -49,6 +49,8 @@ export class BlackHole extends Mesh {
         uniform sampler2D colorMap;
         uniform float iTime;
         uniform float resolution;
+        uniform float renderBlackHole;
+        uniform float renderAccDisk;
 
 
         vec4 quadConj(vec4 q) { return vec4(-q.x, -q.y, -q.z, q.w); }
@@ -216,11 +218,6 @@ export class BlackHole extends Mesh {
           density *= 1.0 / pow(sphericalCoord.x, adiskDensityH);
           density *= 16000.0;
         
-          if (adiskParticle < 0.5) {
-            color += vec3(0.0, 1.0, 0.0) * density * 0.02;
-            return;
-          }
-        
           float noise = 1.0;
           for (int i = 0; i < int(adiskNoiseLOD); i++) {
             noise *= 0.5 * snoise(sphericalCoord * pow(float(i), 2.0) * adiskNoiseScale) + 0.5;
@@ -254,7 +251,9 @@ export class BlackHole extends Mesh {
             if (dot(pos, pos) < 1.0) {
               return color;
             }
-            adiskColor(pos, color, alpha);
+            if (renderAccDisk > 0.) {
+              adiskColor(pos, color, alpha);
+            }
             pos += dir;
           }
           dir = rotateVector(dir, vec3(0.0, 1.0, 0.0), iTime);
@@ -291,13 +290,16 @@ export class BlackHole extends Mesh {
           uv /= 0.5;
           vec3 fragPos = unProjectPoint(vec3(uv, -1.0));
           rayDir = normalize(fragPos - cameraPosition);
-          vec4 texBlackHoleColor = vec4(traceColor(cameraPosition, rayDir), 1.0);
-
-          // tonemapping
-          texBlackHoleColor.rgb = aces(texBlackHoleColor.rgb);
-          texBlackHoleColor.rgb = pow(texBlackHoleColor.rgb, vec3(1.0 / 2.2));
-
-          gl_FragColor = texBlackHoleColor;
+          if (renderBlackHole > 0.) {
+            vec4 texBlackHoleColor = vec4(traceColor(cameraPosition, rayDir), 1.0);
+            // tonemapping
+            texBlackHoleColor.rgb = aces(texBlackHoleColor.rgb);
+            texBlackHoleColor.rgb = pow(texBlackHoleColor.rgb, vec3(1.0 / 2.2));
+  
+            gl_FragColor = texBlackHoleColor;
+          } else {
+            gl_FragColor = vec4(texSkyBoxColor(rayDir).rgb, 1.0);
+          }
         }
       `
     })
